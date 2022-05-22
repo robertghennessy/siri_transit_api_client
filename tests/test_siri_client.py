@@ -1,6 +1,6 @@
 """Tests for car_time file."""
 import pytest
-from transit_vs_car_v2 import siri_client
+from siri_transit_api_client import siri_client
 import configparser
 import os
 
@@ -15,35 +15,30 @@ def test_no_api_key():
     with pytest.raises(Exception) as e_info:
         client = siri_client.SiriClient()
 
-
+"""
 def test_wrong_api_key():
-    transit_api_key = 'a'
-    siri_rt_api_website = config['siri_511']['siri_511_api']
-    transit_agency = config['siri_511']['agency']
+    api_key = 'a'
     with pytest.raises(Exception) as e_info:
-        client = siri_client.SiriClient(transit_api_key, siri_rt_api_website, transit_agency)
-        data = client._request()
+        client = siri_client.SiriClient(api_key=api_key)
 
 
 def test_wrong_website():
-    transit_api_key = config['keys']['Transit511Key']
-    siri_rt_api_website = 'a'
-    transit_agency = config['siri_511']['agency']
+    api_key = config['keys']['Transit511Key']
     with pytest.raises(Exception) as e_info:
-        client = siri_client.SiriClient(transit_api_key, siri_rt_api_website, transit_agency)
+        client = siri_client.SiriClient(api_key=api_key, base_url='https://www.cnn.com')
 
-
-def test_wrong_transit_agency():
-    transit_api_key = config['keys']['Transit511Key']
-    siri_rt_api_website = config['siri_511']['siri_511_api']
-    transit_agency = 'a'
-    with pytest.raises(Exception) as e_info:
-        client = siri_client.SiriClient(transit_api_key, siri_rt_api_website, transit_agency)
+"""
+def test_urlencode_params():
+    param_dict = {'agency': 'CT', 'Format': 'JSON'}
+    str = siri_client.urlencode_params(param_dict)
+    assert str == 'agency=CT&Format=JSON'
 
 
 
-def test_SiriClient():
-    transit_api_key = config['keys']['Transit511Key']
-    siri_rt_api_website = config['siri_511']['siri_511_api']
-    transit_agency = config['siri_511']['agency']
-    client = siri_client.SiriClient(transit_api_key, siri_rt_api_website, transit_agency)
+def test_generate_auth_url():
+    param_dict = {'agency': 'CT', 'Format': 'JSON'}
+    url = 'StopMonitoring'
+    client = siri_client.SiriClient(api_key='fake-key')
+    str = client._generate_auth_url(url, param_dict)
+    assert str == 'StopMonitoring?api_key=fake-key&agency=CT&Format=JSON'
+
