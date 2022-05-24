@@ -4,6 +4,8 @@ https://github.com/googlemaps/google-maps-services-python
 
 @author: Robert Hennessy (robertghennessy@gmail.com)
 """
+import datetime
+
 import requests
 import json
 import datetime as dt
@@ -13,16 +15,17 @@ import time
 import siri_transit_api_client
 import urllib
 
-_DEFAULT_BASE_URL = "https://api.511.org/Transit/StopMonitoring"
+_DEFAULT_BASE_URL = "https://api.511.org/Transit/"
 _DEFAULT_TRANSIT_AGENCY = 'CT'
 _RETRIABLE_STATUSES = {500, 503, 504}
 
 
 class SiriClient:
-    def __init__(self, api_key=None, base_url=_DEFAULT_BASE_URL, retry_timeout=60, queries_per_second=10,
-                 retry_over_query_limit=True):
+    def __init__(self, api_key: str = None, base_url: str = _DEFAULT_BASE_URL, retry_timeout: int = 60,
+                 queries_per_second: int = 10, retry_over_query_limit: bool = True,
+                 requests_session: requests.Session = None, requests_kwargs: dict = None):
         """
-        Query the 511 api to collect stop monitoring information.
+        Create session to query the SIRI transit data from 511.org
 
         :param api_key: string that contains the api key for 511.org
         :type api_key: str
@@ -44,22 +47,27 @@ class SiriClient:
             retried. Defaults to True.
         :type retry_over_query_limit: bool
 
+        :param requests_session: Reused persistent session for flexibility.
+        :type requests_session: requests.Session
+
+        :param requests_kwargs: Extra keyword arguments for the requests library
+        :type requests_kwargs: dict
+
         """
-        if not base_url:
-            raise ValueError("Must provide website link to API.")
         if not api_key:
             raise ValueError("Must provide transit api key.")
         self.base_url = base_url
         self.api_key = api_key
+        self.session = requests_session or requests.Session()
         self.retry_timeout = dt.timedelta(seconds=retry_timeout)
         self.queries_per_second = queries_per_second
         self.retry_over_query_limit = retry_over_query_limit
         # double ended queue. elements can be added to or removed from either the front (head) or back (tail)
         self.sent_times = collections.deque("", queries_per_second)
+        self.requests_kwargs = requests_kwargs or {}
 
-    def _request(self, url, params, first_request_time=None, retry_counter=0,
-                 base_url=None, accepts_clientid=True,
-                 extract_body=None, requests_kwargs=None, post_json=None):
+    def _request(self, url: str, params: dict, first_request_time: datetime.datetime = None, retry_counter: int = 0,
+                 base_url: str = None, extract_body=None, requests_kwargs: dict = None) -> json:
         """Performs HTTP GET/POST with credentials, returning the body as
         JSON.
 
@@ -79,10 +87,6 @@ class SiriClient:
         :param base_url: The base URL for the request. Defaults to the Maps API
             server. Should not have a trailing slash.
         :type base_url: string
-
-        :param accepts_clientid: Whether this call supports the client/signature
-            params. Some APIs require API keys (e.g. Roads).
-        :type accepts_clientid: bool
 
         :param extract_body: A function that extracts the body from the request.
             If the request was not successful, the function should raise a
@@ -126,12 +130,7 @@ class SiriClient:
         requests_kwargs = requests_kwargs or {}
         final_requests_kwargs = dict(self.requests_kwargs, **requests_kwargs)
 
-        # Determine GET/POST.
         requests_method = self.session.get
-        if post_json is not None:
-            requests_method = self.session.post
-            final_requests_kwargs["json"] = post_json
-
         try:
             response = requests_method(base_url + authed_url,
                                        **final_requests_kwargs)
@@ -143,8 +142,8 @@ class SiriClient:
         if response.status_code in _RETRIABLE_STATUSES:
             # Retry request.
             return self._request(url, params, first_request_time,
-                                 retry_counter + 1, base_url, accepts_clientid,
-                                 extract_body, requests_kwargs, post_json)
+                                 retry_counter + 1, base_url,
+                                 extract_body, requests_kwargs)
 
         # Check if the time of the nth previous query (where n is
         # queries_per_second) is under a second ago - if so, sleep for
@@ -161,31 +160,28 @@ class SiriClient:
                 result = self._get_body(response)
             self.sent_times.append(time.time())
             return result
-        except siri_transit_api_client.exceptions._RetriableRequest as e:
-            if isinstance(e, siri_transit_api_client.exceptions._OverQueryLimit) and not self.retry_over_query_limit:
-                raise
-
+        except siri_transit_api_client.exceptions.RetriableRequest as e:
             # Retry request.
             return self._request(url, params, first_request_time,
-                                 retry_counter + 1, base_url, accepts_clientid,
-                                 extract_body, requests_kwargs, post_json)
+                                 retry_counter + 1, base_url,
+                                 extract_body, requests_kwargs)
 
-    def _get_body(self, response):
+    def _get_body(self, response: requests.Session) -> json:
         if response.status_code != 200:
             raise siri_transit_api_client.exceptions.HTTPError(response.status_code)
 
-        body = response.json()
+        decoded_data = response.content.decode('utf-8-sig')
+        body = json.loads(decoded_data)
+        service_delivery = body.get("ServiceDelivery", None)
+        if service_delivery:
+            # status is optional field so only fail if value false is returned
+            api_status = service_delivery.get('Status', 'true')
+            if api_status == True or api_status == 'true':
+                return body
+            elif api_status == False or api_status == 'false':
+                raise siri_transit_api_client.exceptions.RetriableRequest
 
-        api_status = body["status"]
-        if api_status == "OK" or api_status == "ZERO_RESULTS":
-            return body
-
-        if api_status == "OVER_QUERY_LIMIT":
-            raise siri_transit_api_client.exceptions._OverQueryLimit(
-                api_status, body.get("error_message"))
-
-        raise siri_transit_api_client.exceptions.ApiError(api_status,
-                                             body.get("error_message"))
+        raise siri_transit_api_client.exceptions.ApiError("error", body)
 
     def _generate_auth_url(self, path: str, params: dict) -> str:
         """Returns the path and query string portion of the request URL, first
@@ -199,11 +195,12 @@ class SiriClient:
 
         :rtype: string
         """
-        if self.api_key:
-            return path + "?" + "api_key=" + str(self.api_key) + "&" + urlencode_params(params)
-        raise ValueError("Must provide API key for this API.")
+        return path + "?" + "api_key=" + str(self.api_key) + "&" + urlencode_params(params)
+
+
+from siri_transit_api_client.stop_monitoring import stop_monitoring
+SiriClient.stop_monitoring = stop_monitoring
 
 
 def urlencode_params(params: dict) -> str:
     return urllib.parse.urlencode(params)
-

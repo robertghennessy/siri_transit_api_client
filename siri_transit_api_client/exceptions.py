@@ -24,7 +24,6 @@ class TransportError(Exception):
     def __str__(self):
         if self.base_exception:
             return str(self.base_exception)
-
         return "An unknown error occurred."
 
 
@@ -42,12 +41,12 @@ class Timeout(Exception):
     pass
 
 
-class _RetriableRequest(Exception):
+class RetriableRequest(Exception):
     """Signifies that the request can be retried."""
     pass
 
 
-class _OverQueryLimit(ApiError, _RetriableRequest):
+class OverQueryLimit(ApiError, RetriableRequest):
     """Signifies that the request failed because the client exceeded its query rate limit.
     Normally we treat this as a retriable condition, but we allow the calling code to specify that these requests should
     not be retried.
