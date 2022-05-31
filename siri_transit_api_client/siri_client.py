@@ -17,6 +17,8 @@ import urllib
 import siri_transit_api_client
 from siri_transit_api_client.stop_monitoring import stop_monitoring
 from siri_transit_api_client.operators import operators
+from siri_transit_api_client.lines import lines
+from siri_transit_api_client.stops import stops
 
 _DEFAULT_BASE_URL = "https://api.511.org/Transit/"
 _DEFAULT_TRANSIT_AGENCY = 'CT'
@@ -207,6 +209,9 @@ class SiriClient:
 # load in the other methods
 SiriClient.stop_monitoring = stop_monitoring
 SiriClient.operators = operators
+SiriClient.lines = lines
+SiriClient.stops = stops
+
 
 def urlencode_params(params: dict) -> str:
     return urllib.parse.urlencode(params)
