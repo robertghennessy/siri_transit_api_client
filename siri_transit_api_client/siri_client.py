@@ -12,8 +12,11 @@ import datetime as dt
 import collections
 import random
 import time
-import siri_transit_api_client
 import urllib
+
+import siri_transit_api_client
+from siri_transit_api_client.stop_monitoring import stop_monitoring
+from siri_transit_api_client.operators import operators
 
 _DEFAULT_BASE_URL = "https://api.511.org/Transit/"
 _DEFAULT_TRANSIT_AGENCY = 'CT'
@@ -166,7 +169,7 @@ class SiriClient:
                                  retry_counter + 1, base_url,
                                  extract_body, requests_kwargs)
 
-    def _get_body(self, response: requests.Session) -> json:
+    def _get_body(self, response: requests.Session) -> dict:
         if response.status_code != 200:
             raise siri_transit_api_client.exceptions.HTTPError(response.status_code)
 
@@ -176,9 +179,9 @@ class SiriClient:
         if service_delivery:
             # status is optional field so only fail if value false is returned
             api_status = service_delivery.get('Status', 'true')
-            if api_status == True or api_status == 'true':
+            if api_status is True or api_status == 'true':
                 return body
-            elif api_status == False or api_status == 'false':
+            elif api_status is False or api_status == 'false':
                 raise siri_transit_api_client.exceptions.RetriableRequest
 
         raise siri_transit_api_client.exceptions.ApiError("error", body)
@@ -195,12 +198,15 @@ class SiriClient:
 
         :rtype: string
         """
-        return path + "?" + "api_key=" + str(self.api_key) + "&" + urlencode_params(params)
+        if params:
+            return path + "?" + "api_key=" + str(self.api_key) + "&" + urlencode_params(params)
+        else:
+            return path + "?" + "api_key=" + str(self.api_key)
 
 
-from siri_transit_api_client.stop_monitoring import stop_monitoring
+# load in the other methods
 SiriClient.stop_monitoring = stop_monitoring
-
+SiriClient.operators = operators
 
 def urlencode_params(params: dict) -> str:
     return urllib.parse.urlencode(params)
