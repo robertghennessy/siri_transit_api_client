@@ -5,11 +5,13 @@ Description: This file contains a function to get the routes covered by transit 
 """
 
 
-def lines(client, operator_id: str , accept_language: str = None, line_id: str = None):
+def stop_places(client, operator_id: str, accept_language: str = None, stop_id: str = None):
     """
-    Query the 511 api to get the routes covered by transit operators within the jurisdiction. Consumers can request
-    list of all the routes within an operator, or they can use additional filters like line id to restrict the results
-    as per their needs and use case.
+    Query the 511 api to get a named place or the physical stop where public transport may be accessed. Consumers can
+    request list of all the stop places by operator code or they can use additional filters such as stop id to restrict
+    the results as per their needs and use case. For a given stop, the physical representation of the stop (StopPlace)
+    and the representation of the stop as a point in the timetable (ScheduledStopPoint) will use the same stop
+    identifier (id).
 
     :param client: SiriClient
     :type client: SiriClient
@@ -22,14 +24,14 @@ def lines(client, operator_id: str , accept_language: str = None, line_id: str =
     :param operator_id: Optional. The operator_id parameter supports filtering based on a particular operator id/code
     :type operator_id: str
 
-    :param line_id: Optional. line_id parameter supports filtering based on a particular line
-    :type line_id: str
+    :param stop_id: Optional. stop_id parameter supports filtering based on a particular stop
+    :type stop_id: str
     """
 
     params = {"Operator_id": operator_id}
     if accept_language:
         params["accept_language"] = accept_language
-    if line_id:
-        params["Line_id"] = line_id
+    if stop_id:
+        params["Stop_id"] = stop_id
 
-    return client._request("lines", params)
+    return client._request("stopPlaces", params)

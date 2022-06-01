@@ -21,18 +21,18 @@ class TestSiriClient:
         assert output_str == 'agency=CT&Format=JSON'
 
     def test_generate_auth_url(self):
-        param_dict = {'agency': 'CT', 'Format': 'JSON'}
+        param_dict = {'agency': 'CT'}
         url = 'StopMonitoring'
         client = siri_client.SiriClient(api_key='fake-key')
         output_str = client._generate_auth_url(url, param_dict)
-        assert output_str == 'StopMonitoring?api_key=fake-key&agency=CT&Format=JSON'
+        assert output_str == 'StopMonitoring?api_key=fake-key&Format=json&agency=CT'
 
     def test_generate_auth_url_no_optional(self):
         param_dict = {}
         url = 'StopMonitoring'
         client = siri_client.SiriClient(api_key='fake-key')
         output_str = client._generate_auth_url(url, param_dict)
-        assert output_str == 'StopMonitoring?api_key=fake-key'
+        assert output_str == 'StopMonitoring?api_key=fake-key&Format=json'
 
     @responses.activate
     def test_queries_per_second(self):
@@ -45,7 +45,7 @@ class TestSiriClient:
         for _ in query_range:
             responses.add(
                 responses.GET,
-                "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
+                "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT",
                 body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT","Status":"true","StopMonitoringDelivery":{}}}',
                 status=200,
                 content_type="application/json",
@@ -63,7 +63,7 @@ class TestSiriClient:
     def test_key_sent(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
+            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT",
             body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT","Status":"true","StopMonitoringDelivery":{}}}',
             status=200,
             content_type="application/json",
@@ -73,7 +73,7 @@ class TestSiriClient:
         client.stop_monitoring("CT")
 
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT"
+        assert responses.calls[0].request.url == "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT"
 
     @responses.activate
     def test_timeout(self):
@@ -193,7 +193,7 @@ class TestSiriClient:
         for _ in query_range:
             responses.add(
                 responses.GET,
-                "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
+                "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT",
                 body='{"status":"Internal Server Error.","results":[]}',
                 status=500,
                 content_type="application/json",
@@ -216,7 +216,7 @@ class TestSiriClient:
 
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key",
+            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json",
             body='{"error":"errormessage"}',
             status=403,
             content_type="application/json",
@@ -231,7 +231,7 @@ class TestSiriClient:
     def test_api_error(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
+            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT",
             body='{"status":"Error","results":[]}',
             status=200,
             content_type="application/json",

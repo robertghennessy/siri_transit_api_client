@@ -19,6 +19,7 @@ from siri_transit_api_client.stop_monitoring import stop_monitoring
 from siri_transit_api_client.operators import operators
 from siri_transit_api_client.lines import lines
 from siri_transit_api_client.stops import stops
+from siri_transit_api_client.stop_places import stop_places
 
 _DEFAULT_BASE_URL = "https://api.511.org/Transit/"
 _DEFAULT_TRANSIT_AGENCY = 'CT'
@@ -106,7 +107,7 @@ class SiriClient:
         :raises ApiError: when the API returns an error.
         :raises Timeout: if the request timed out.
         :raises TransportError: when something went wrong while trying to
-            exceute a request.
+            execute a request.
         """
 
         if base_url is None:
@@ -200,10 +201,11 @@ class SiriClient:
 
         :rtype: string
         """
+        start_str = path + "?" + "api_key=" + str(self.api_key) + "&Format=json"
         if params:
-            return path + "?" + "api_key=" + str(self.api_key) + "&" + urlencode_params(params)
+            return start_str + "&" + urlencode_params(params)
         else:
-            return path + "?" + "api_key=" + str(self.api_key)
+            return start_str
 
 
 # load in the other methods
@@ -211,6 +213,7 @@ SiriClient.stop_monitoring = stop_monitoring
 SiriClient.operators = operators
 SiriClient.lines = lines
 SiriClient.stops = stops
+SiriClient.stop_places = stop_places
 
 
 def urlencode_params(params: dict) -> str:
