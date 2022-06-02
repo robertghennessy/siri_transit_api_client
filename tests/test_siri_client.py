@@ -1,5 +1,6 @@
 """Tests for car_time file."""
 import pytest
+import siri_transit_api_client
 from siri_transit_api_client import siri_client
 import time
 import responses
@@ -7,15 +8,15 @@ import responses
 
 class TestSiriClient:
     def test_no_api_key(self):
-        with pytest.raises(Exception) as e_info:
+        with pytest.raises(ValueError) as e_info:
             client = siri_client.SiriClient()
 
     def test_invalid_api_key(self):
-        with pytest.raises(Exception) as e_info:
+        with pytest.raises(siri_transit_api_client.exceptions.ApiError) as e_info:
             client = siri_client.SiriClient(api_key="invalid-key")
             client.stop_monitoring("CT")
 
-    def test_urlencode_params(self):
+    def test_url_encode_params(self):
         param_dict = {'agency': 'CT', 'Format': 'JSON'}
         output_str = siri_client.urlencode_params(param_dict)
         assert output_str == 'agency=CT&Format=JSON'
@@ -83,7 +84,7 @@ class TestSiriClient:
             status=408
         )
 
-        # TODO - this test function does not work. Trhows http error instead of transport error
+        # TODO - this test function does not work. Throws http error instead of transport error
 
         #client = siri_client.SiriClient(api_key="fake-key")
         #client.stop_monitoring("CT")

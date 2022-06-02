@@ -22,14 +22,21 @@ from siri_transit_api_client.stops import stops
 from siri_transit_api_client.stop_places import stop_places
 
 _DEFAULT_BASE_URL = "https://api.511.org/Transit/"
-_DEFAULT_TRANSIT_AGENCY = 'CT'
+_DEFAULT_TRANSIT_AGENCY = "CT"
 _RETRIABLE_STATUSES = {500, 503, 504}
 
 
 class SiriClient:
-    def __init__(self, api_key: str = None, base_url: str = _DEFAULT_BASE_URL, retry_timeout: int = 60,
-                 queries_per_second: int = 10, retry_over_query_limit: bool = True,
-                 requests_session: requests.Session = None, requests_kwargs: dict = None):
+    def __init__(
+        self,
+        api_key: str = None,
+        base_url: str = _DEFAULT_BASE_URL,
+        retry_timeout: int = 60,
+        queries_per_second: int = 10,
+        retry_over_query_limit: bool = True,
+        requests_session: requests.Session = None,
+        requests_kwargs: dict = None,
+    ):
         """
         Create session to query the SIRI transit data from 511.org
 
@@ -72,8 +79,16 @@ class SiriClient:
         self.sent_times = collections.deque("", queries_per_second)
         self.requests_kwargs = requests_kwargs or {}
 
-    def _request(self, url: str, params: dict, first_request_time: datetime.datetime = None, retry_counter: int = 0,
-                 base_url: str = None, extract_body=None, requests_kwargs: dict = None) -> json:
+    def _request(
+        self,
+        url: str,
+        params: dict,
+        first_request_time: datetime.datetime = None,
+        retry_counter: int = 0,
+        base_url: str = None,
+        extract_body=None,
+        requests_kwargs: dict = None,
+    ) -> json:
         """Performs HTTP GET/POST with credentials, returning the body as
         JSON.
 
@@ -109,7 +124,6 @@ class SiriClient:
         :raises TransportError: when something went wrong while trying to
             execute a request.
         """
-
         if base_url is None:
             base_url = self.base_url
 
@@ -138,8 +152,7 @@ class SiriClient:
 
         requests_method = self.session.get
         try:
-            response = requests_method(base_url + authed_url,
-                                       **final_requests_kwargs)
+            response = requests_method(base_url + authed_url, **final_requests_kwargs)
         except requests.exceptions.Timeout:
             raise siri_transit_api_client.exceptions.Timeout()
         except Exception as e:
@@ -147,9 +160,15 @@ class SiriClient:
 
         if response.status_code in _RETRIABLE_STATUSES:
             # Retry request.
-            return self._request(url, params, first_request_time,
-                                 retry_counter + 1, base_url,
-                                 extract_body, requests_kwargs)
+            return self._request(
+                url,
+                params,
+                first_request_time,
+                retry_counter + 1,
+                base_url,
+                extract_body,
+                requests_kwargs,
+            )
 
         # Check if the time of the nth previous query (where n is
         # queries_per_second) is under a second ago - if so, sleep for
@@ -168,23 +187,34 @@ class SiriClient:
             return result
         except siri_transit_api_client.exceptions.RetriableRequest as e:
             # Retry request.
-            return self._request(url, params, first_request_time,
-                                 retry_counter + 1, base_url,
-                                 extract_body, requests_kwargs)
+            return self._request(
+                url,
+                params,
+                first_request_time,
+                retry_counter + 1,
+                base_url,
+                extract_body,
+                requests_kwargs,
+            )
 
-    def _get_body(self, response: requests.Session) -> dict:
-        if response.status_code != 200:
+    def _get_body(self, response: requests.Response) -> dict:
+        status_code = response.status_code
+        if status_code == 401:
+            raise siri_transit_api_client.exceptions.ApiError(response.text)
+        elif status_code == 404:
+            raise siri_transit_api_client.exceptions.ApiError(response.text)
+        elif status_code != 200:
             raise siri_transit_api_client.exceptions.HTTPError(response.status_code)
 
-        decoded_data = response.content.decode('utf-8-sig')
+        decoded_data = response.content.decode("utf-8-sig")
         body = json.loads(decoded_data)
         service_delivery = body.get("ServiceDelivery", None)
         if service_delivery:
             # status is optional field so only fail if value false is returned
-            api_status = service_delivery.get('Status', 'true')
-            if api_status is True or api_status == 'true':
+            api_status = service_delivery.get("Status", "true")
+            if api_status is True or api_status == "true":
                 return body
-            elif api_status is False or api_status == 'false':
+            elif api_status is False or api_status == "false":
                 raise siri_transit_api_client.exceptions.RetriableRequest
 
         raise siri_transit_api_client.exceptions.ApiError("error", body)
@@ -203,7 +233,7 @@ class SiriClient:
         """
         start_str = path + "?" + "api_key=" + str(self.api_key) + "&Format=json"
         if params:
-            return start_str + "&" + urlencode_params(params)
+            return start_str + "&" + url_encode_params(params)
         else:
             return start_str
 
@@ -216,5 +246,5 @@ SiriClient.stops = stops
 SiriClient.stop_places = stop_places
 
 
-def urlencode_params(params: dict) -> str:
+def url_encode_params(params: dict) -> str:
     return urllib.parse.urlencode(params)
