@@ -1,24 +1,25 @@
 """
-Description: This file contains a function to perform stop monitoring queries.
+Description: This file contains a function to list all the public transit operators in jurisdiction
 
 @author: Robert Hennessy (robertghennessy@gmail.com)
 """
 
 
-def operators(client, accept_language: str = None, operator_id: str = None):
+def operators(client, accept_language: str = None, operator_id: str = None) -> dict:
     """
-    Query the 511 api to collect list of all the public transit operators within the jurisdiction.
+    Query api to collect list of all the public transit operators within the jurisdiction.
 
-    :param client: SiriClient
+    :param client: SiriClient session
     :type client: SiriClient
 
-    :param accept_language: Optional. If multiple languages are supported, this can be used to request data in
-        desired language, If the jurisdiction does not support the response in requested language, response could be
-        in default language selected by jurisdiction.
-    :type accept_language: str
+    :param accept_language: select desired language. if unsupported, will return default language.
+    :type accept_language: str, optional
 
-    :param operator_id: Optional. The operator_id parameter supports filtering based on a particular operator id/code
-    :type operator_id: str
+    :param operator_id: filter based on a particular operator id/code
+    :type operator_id: str, optional
+
+    :return: Results of the query
+    :rtype: dict
     """
 
     params = {}

@@ -16,11 +16,6 @@ class TestSiriClient:
             client = siri_client.SiriClient(api_key="invalid-key")
             client.stop_monitoring("CT")
 
-    def test_url_encode_params(self):
-        param_dict = {'agency': 'CT', 'Format': 'JSON'}
-        output_str = siri_client.urlencode_params(param_dict)
-        assert output_str == 'agency=CT&Format=JSON'
-
     def test_generate_auth_url(self):
         param_dict = {'agency': 'CT'}
         url = 'StopMonitoring'
@@ -86,30 +81,20 @@ class TestSiriClient:
 
         # TODO - this test function does not work. Throws http error instead of transport error
 
-        #client = siri_client.SiriClient(api_key="fake-key")
-        #client.stop_monitoring("CT")
+        # client = siri_client.SiriClient(api_key="fake-key")
+        # client.stop_monitoring("CT")
 
-        #assert len(responses.calls) == 1
-        #assert responses.calls[0].request.url == "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT"
-
+        # assert len(responses.calls) == 1
+        # assert responses.calls[0].request.url == "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT"
 
     @responses.activate
     def test_retry(self):
-        class request_callback:
-            def __init__(self):
-                self.first_req = True
-
-            def __call__(self, req):
-                if self.first_req:
-                    self.first_req = False
-                    return (500, {}, '{"ServiceDelivery": { "Status": "false"}}')
-                return (200, {}, '{"ServiceDelivery": { "Status": "true"}}')
 
         responses.add_callback(
             responses.GET,
             "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
             content_type="application/json",
-            callback=request_callback(),
+            callback=RequestCallback(),
         )
 
         client = siri_client.SiriClient(api_key="fake-key")
@@ -120,21 +105,11 @@ class TestSiriClient:
 
     @responses.activate
     def test_retry_api_false(self):
-        class request_callback:
-            def __init__(self):
-                self.first_req = True
-
-            def __call__(self, req):
-                if self.first_req:
-                    self.first_req = False
-                    return (200, {}, '{"ServiceDelivery": { "Status": "false"}}')
-                return (200, {}, '{"ServiceDelivery": { "Status": "true"}}')
-
         responses.add_callback(
             responses.GET,
             "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
             content_type="application/json",
-            callback=request_callback(),
+            callback=RequestCallback(),
         )
 
         client = siri_client.SiriClient(api_key="fake-key")
@@ -145,21 +120,11 @@ class TestSiriClient:
 
     @responses.activate
     def test_retry_intermittent(self):
-        class request_callback:
-            def __init__(self):
-                self.first_req = True
-
-            def __call__(self, req):
-                if self.first_req:
-                    self.first_req = False
-                    return (500, {}, '{"ServiceDelivery": { "Status": "false"}}')
-                return (200, {}, '{"ServiceDelivery": { "Status": "true"}}')
-
         responses.add_callback(
             responses.GET,
             "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
             content_type="application/json",
-            callback=request_callback(),
+            callback=RequestCallback(),
         )
 
         client = siri_client.SiriClient(api_key="fake-key")
@@ -243,3 +208,14 @@ class TestSiriClient:
             client.stop_monitoring("CT")
 
         assert e_info.typename == 'ApiError'
+
+
+class RequestCallback:
+    def __init__(self):
+        self.first_req = True
+
+    def __call__(self, req):
+        if self.first_req:
+            self.first_req = False
+            return 200, {}, '{"ServiceDelivery": { "Status": "false"}}'
+        return 200, {}, '{"ServiceDelivery": { "Status": "true"}}'

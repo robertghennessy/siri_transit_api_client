@@ -63,7 +63,7 @@ class SiriClient:
         :param requests_session: Reused persistent session for flexibility.
         :type requests_session: requests.Session
 
-        :param requests_kwargs: Extra keyword arguments for the requests library
+        :param requests_kwargs: Extra keyword arguments for the requests' library
         :type requests_kwargs: dict
 
         """
@@ -88,7 +88,7 @@ class SiriClient:
         base_url: str = None,
         extract_body=None,
         requests_kwargs: dict = None,
-    ) -> json:
+    ) -> str:
         """Performs HTTP GET/POST with credentials, returning the body as
         JSON.
 
@@ -233,7 +233,7 @@ class SiriClient:
         """
         start_str = path + "?" + "api_key=" + str(self.api_key) + "&Format=json"
         if params:
-            return start_str + "&" + url_encode_params(params)
+            return start_str + "&" + urllib.parse.urlencode(params)
         else:
             return start_str
 
@@ -244,7 +244,3 @@ SiriClient.operators = operators
 SiriClient.lines = lines
 SiriClient.stops = stops
 SiriClient.stop_places = stop_places
-
-
-def url_encode_params(params: dict) -> str:
-    return urllib.parse.urlencode(params)

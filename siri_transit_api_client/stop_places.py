@@ -1,5 +1,5 @@
 """
-Description: This file contains a function to get the routes covered by transit operator.
+Description: This file contains a function to get the stop locations for a transit operator.
 
 @author: Robert Hennessy (robertghennessy@gmail.com)
 """
@@ -7,25 +7,22 @@ Description: This file contains a function to get the routes covered by transit 
 
 def stop_places(client, operator_id: str, accept_language: str = None, stop_id: str = None):
     """
-    Query the 511 api to get a named place or the physical stop where public transport may be accessed. Consumers can
-    request list of all the stop places by operator code or they can use additional filters such as stop id to restrict
-    the results as per their needs and use case. For a given stop, the physical representation of the stop (StopPlace)
-    and the representation of the stop as a point in the timetable (ScheduledStopPoint) will use the same stop
-    identifier (id).
+    Query to get a named place or the physical stop where public transport may be accessed. C
 
-    :param client: SiriClient
+    :param client: SiriClient session
     :type client: SiriClient
 
-    :param accept_language: Optional. If multiple languages are supported, this can be used to request data in
-        desired language, If the jurisdiction does not support the response in requested language, response could be
-        in default language selected by jurisdiction.
-    :type accept_language: str
-
-    :param operator_id: Optional. The operator_id parameter supports filtering based on a particular operator id/code
+    :param operator_id: filter for operator
     :type operator_id: str
 
-    :param stop_id: Optional. stop_id parameter supports filtering based on a particular stop
-    :type stop_id: str
+    :param accept_language: select desired language. if language unsupported, will return default language.
+    :type accept_language: str, optional
+
+    :param stop_id: filter for a stop
+    :type stop_id: str, optional
+
+    :return: Results of the query
+    :rtype: dict
     """
 
     params = {"Operator_id": operator_id}

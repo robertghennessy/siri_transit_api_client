@@ -5,25 +5,25 @@ Description: This file contains a function to get the routes covered by transit 
 """
 
 
-def lines(client, operator_id: str , accept_language: str = None, line_id: str = None):
+def lines(client, operator_id: str, accept_language: str = None, line_id: str = None) -> dict:
     """
-    Query the 511 api to get the routes covered by transit operators within the jurisdiction. Consumers can request
-    list of all the routes within an operator, or they can use additional filters like line id to restrict the results
-    as per their needs and use case.
+    Query the 511 api to get the routes covered by transit operators within the jurisdiction. Can list all routes or
+    filter using line_id.
 
-    :param client: SiriClient
+    :param client: SiriClient session
     :type client: SiriClient
 
-    :param accept_language: Optional. If multiple languages are supported, this can be used to request data in
-        desired language, If the jurisdiction does not support the response in requested language, response could be
-        in default language selected by jurisdiction.
-    :type accept_language: str
-
-    :param operator_id: Optional. The operator_id parameter supports filtering based on a particular operator id/code
+    :param operator_id: filter a particular operator id/code
     :type operator_id: str
 
-    :param line_id: Optional. line_id parameter supports filtering based on a particular line
-    :type line_id: str
+    :param accept_language: select desired language. if unsupported, will return default language.
+    :type accept_language: str, optional
+
+    :param line_id: filter based on a particular line
+    :type line_id: str, optional
+
+    :return: Results of the query
+    :rtype: dict
     """
 
     params = {"Operator_id": operator_id}
