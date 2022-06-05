@@ -1,14 +1,16 @@
+import pytest
 from siri_transit_api_client import siri_client
 import responses
+import json
 
 
-class TestStops:
+class TestVehicleMonitoring:
 
     @responses.activate
-    def test_no_optional_params(self):
+    def test_missing_agency(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/stops?api_key=fake-key&Format=json&Operator_id=CT",
+            "https://api.511.org/Transit/VehicleMonitoring?api_key=fake-key&agency=CT",
             body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT",'
                  '"Status":"true","StopMonitoringDelivery":{}}}',
             status=200,
@@ -16,18 +18,16 @@ class TestStops:
         )
 
         client = siri_client.SiriClient(api_key="fake-key")
-        client.stops('CT')
+        with pytest.raises(Exception) as e_info:
+            client.vehicle_monitoring()
 
-        assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == \
-               "https://api.511.org/Transit/stops?api_key=fake-key&Format=json&Operator_id=CT"
+        assert e_info.typename == 'TypeError'
 
     @responses.activate
-    def test_all_optional_params(self):
+    def test_vehicle_code_sent(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/stops?api_key=fake-key&Format=json&Operator_id=CT&accept_language=en&"
-            "Line_id=L5&include_stop_areas=true&Direction_id=n&Pattern_id=p1",
+            "https://api.511.org/Transit/VehicleMonitoring?api_key=fake-key&Format=json&agency=CT&vehicleID=231",
             body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT",'
                  '"Status":"true","StopMonitoringDelivery":{}}}',
             status=200,
@@ -35,11 +35,8 @@ class TestStops:
         )
 
         client = siri_client.SiriClient(api_key="fake-key")
-        client.stops('CT', 'en', 'L5', True, 'n', 'p1')
+        client.vehicle_monitoring("CT", "231")
 
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == \
-               "https://api.511.org/Transit/stops?api_key=fake-key&Format=json&Operator_id=CT&accept_language=en&" \
-               "Line_id=L5&include_stop_areas=true&Direction_id=n&Pattern_id=p1"
-
-        # TODO - update the url to a real url #
+               "https://api.511.org/Transit/VehicleMonitoring?api_key=fake-key&Format=json&agency=CT&vehicleID=231"

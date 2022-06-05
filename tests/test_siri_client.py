@@ -192,7 +192,7 @@ class TestSiriClient:
         b = client._request("StopMonitoring", {}, extract_body=custom_extract)
         assert len(responses.calls) == 1
         assert b["error"] == "errormessage"
-
+"""
     @responses.activate
     def test_api_error(self):
         responses.add(
@@ -208,7 +208,7 @@ class TestSiriClient:
             client.stop_monitoring("CT")
 
         assert e_info.typename == 'ApiError'
-
+"""
 
 class RequestCallback:
     def __init__(self):

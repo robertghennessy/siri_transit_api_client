@@ -20,6 +20,11 @@ from siri_transit_api_client.operators import operators
 from siri_transit_api_client.lines import lines
 from siri_transit_api_client.stops import stops
 from siri_transit_api_client.stop_places import stop_places
+from siri_transit_api_client.patterns import patterns
+from siri_transit_api_client.timetable import timetable
+from siri_transit_api_client.holidays import holidays
+from siri_transit_api_client.stop_timetable import stop_timetable
+from siri_transit_api_client.vehicle_monitoring import vehicle_monitoring
 
 _DEFAULT_BASE_URL = "https://api.511.org/Transit/"
 _DEFAULT_TRANSIT_AGENCY = "CT"
@@ -199,7 +204,9 @@ class SiriClient:
 
     def _get_body(self, response: requests.Response) -> dict:
         status_code = response.status_code
-        if status_code == 401:
+        if status_code == 400:
+            raise siri_transit_api_client.exceptions.ApiError("error", response.text)
+        elif status_code == 401:
             raise siri_transit_api_client.exceptions.ApiError(response.text)
         elif status_code == 404:
             raise siri_transit_api_client.exceptions.ApiError(response.text)
@@ -208,14 +215,19 @@ class SiriClient:
 
         decoded_data = response.content.decode("utf-8-sig")
         body = json.loads(decoded_data)
-        service_delivery = body.get("ServiceDelivery", None)
-        if service_delivery:
-            # status is optional field so only fail if value false is returned
-            api_status = service_delivery.get("Status", "true")
-            if api_status is True or api_status == "true":
+        if body and type(body) is list:
+            return body
+        if body and type(body) is dict:
+            if "ServiceDelivery" in body:
+                service_delivery = body.get("ServiceDelivery")
+                # status is optional field so only fail if value false is returned
+                api_status = service_delivery.get("Status", "true")
+                if api_status is True or api_status == "true":
+                    return body
+                elif api_status is False or api_status == "false":
+                    raise siri_transit_api_client.exceptions.RetriableRequest
+            else:
                 return body
-            elif api_status is False or api_status == "false":
-                raise siri_transit_api_client.exceptions.RetriableRequest
 
         raise siri_transit_api_client.exceptions.ApiError("error", body)
 
@@ -244,3 +256,8 @@ SiriClient.operators = operators
 SiriClient.lines = lines
 SiriClient.stops = stops
 SiriClient.stop_places = stop_places
+SiriClient.patterns = patterns
+SiriClient.timetable = timetable
+SiriClient.holidays = holidays
+SiriClient.stop_timetable = stop_timetable
+SiriClient.vehicle_monitoring = vehicle_monitoring
