@@ -5,7 +5,9 @@ Description: This file contains a function to get the routes covered by transit 
 """
 
 
-def lines(client, operator_id: str, accept_language: str = None, line_id: str = None) -> dict:
+def lines(
+    client, operator_id: str, accept_language: str = None, line_id: str = None
+) -> dict:
     """
     Query the 511 api to get the routes covered by transit operators within the jurisdiction. Can list all routes or
     filter using line_id.

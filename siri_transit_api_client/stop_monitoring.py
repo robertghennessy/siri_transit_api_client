@@ -22,9 +22,7 @@ def stop_monitoring(client, agency: str, stop_code: str = None) -> dict:
     :return: Results of the query
     :rtype: dict
     """
-    params = {
-        'agency': agency
-    }
+    params = {"agency": agency}
     if stop_code:
         params["stopCode"] = stop_code
 

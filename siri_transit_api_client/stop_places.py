@@ -5,7 +5,9 @@ Description: This file contains a function to get the stop locations for a trans
 """
 
 
-def stop_places(client, operator_id: str, accept_language: str = None, stop_id: str = None):
+def stop_places(
+    client, operator_id: str, accept_language: str = None, stop_id: str = None
+):
     """
     Query to get a named place or the physical stop where public transport may be accessed. C
 

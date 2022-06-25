@@ -5,6 +5,7 @@ Defines exceptions that are thrown by the api client.
 
 class ApiError(Exception):
     """Represents an exception returned by the remote API."""
+
     def __init__(self, status, message=None):
         self.status = status
         self.message = message
@@ -18,6 +19,7 @@ class ApiError(Exception):
 
 class TransportError(Exception):
     """Something went wrong while trying to execute the request."""
+
     def __init__(self, base_exception=None):
         self.base_exception = base_exception
 
@@ -29,6 +31,7 @@ class TransportError(Exception):
 
 class HTTPError(TransportError):
     """An unexpected HTTP error occurred."""
+
     def __init__(self, status_code):
         self.status_code = status_code
 
@@ -38,11 +41,13 @@ class HTTPError(TransportError):
 
 class Timeout(Exception):
     """The request timed out."""
+
     pass
 
 
 class RetriableRequest(Exception):
     """Signifies that the request can be retried."""
+
     pass
 
 
@@ -51,4 +56,5 @@ class OverQueryLimit(ApiError, RetriableRequest):
     Normally we treat this as a retriable condition, but we allow the calling code to specify that these requests should
     not be retried.
     """
+
     pass

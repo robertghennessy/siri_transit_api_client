@@ -5,7 +5,13 @@ Description: This file contains a function to query the patterns.
 """
 
 
-def patterns(client, operator_id: str, line_id: str, accept_language: str = None, pattern_id: str = None) -> dict:
+def patterns(
+    client,
+    operator_id: str,
+    line_id: str,
+    accept_language: str = None,
+    pattern_id: str = None,
+) -> dict:
     """
     Query  api to get the pattern,  an ordered list of stop points and time points for a Line.
 

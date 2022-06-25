@@ -5,8 +5,15 @@ Description: This file contains a function to query the stop locations.
 """
 
 
-def stops(client, operator_id: str, accept_language: str = None,  line_id: str = None, include_stop_areas: bool = False,
-          direction_id: str = None, pattern_id: str = None) -> dict:
+def stops(
+    client,
+    operator_id: str,
+    accept_language: str = None,
+    line_id: str = None,
+    include_stop_areas: bool = False,
+    direction_id: str = None,
+    pattern_id: str = None,
+) -> dict:
     """
     Query  api to get location where passengers can board or leave from vehicles.
 

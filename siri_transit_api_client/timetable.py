@@ -6,9 +6,15 @@ Description: This file contains a function to query the timetable.
 import datetime as dt
 
 
-def timetable(client, operator_id: str, line_id: str, accept_language: str = None,
-              include_day_type_assignments: bool = None, include_special_service: bool = False,
-              exception_date: dt.date = None) -> dict:
+def timetable(
+    client,
+    operator_id: str,
+    line_id: str,
+    accept_language: str = None,
+    include_day_type_assignments: bool = None,
+    include_special_service: bool = False,
+    exception_date: dt.date = None,
+) -> dict:
     """
     Query  api to get the timetable for a given Line, Direction and DayType.
 

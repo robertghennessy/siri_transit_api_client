@@ -17,18 +17,18 @@ class TestSiriClient:
             client.stop_monitoring("CT")
 
     def test_generate_auth_url(self):
-        param_dict = {'agency': 'CT'}
-        url = 'StopMonitoring'
-        client = siri_client.SiriClient(api_key='fake-key')
+        param_dict = {"agency": "CT"}
+        url = "StopMonitoring"
+        client = siri_client.SiriClient(api_key="fake-key")
         output_str = client._generate_auth_url(url, param_dict)
-        assert output_str == 'StopMonitoring?api_key=fake-key&Format=json&agency=CT'
+        assert output_str == "StopMonitoring?api_key=fake-key&Format=json&agency=CT"
 
     def test_generate_auth_url_no_optional(self):
         param_dict = {}
-        url = 'StopMonitoring'
-        client = siri_client.SiriClient(api_key='fake-key')
+        url = "StopMonitoring"
+        client = siri_client.SiriClient(api_key="fake-key")
         output_str = client._generate_auth_url(url, param_dict)
-        assert output_str == 'StopMonitoring?api_key=fake-key&Format=json'
+        assert output_str == "StopMonitoring?api_key=fake-key&Format=json"
 
     @responses.activate
     def test_queries_per_second(self):
@@ -69,14 +69,17 @@ class TestSiriClient:
         client.stop_monitoring("CT")
 
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT"
+        assert (
+            responses.calls[0].request.url
+            == "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT"
+        )
 
     @responses.activate
     def test_timeout(self):
         responses.add(
             responses.GET,
             "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
-            status=408
+            status=408,
         )
 
         # TODO - this test function does not work. Throws http error instead of transport error
@@ -146,7 +149,7 @@ class TestSiriClient:
         with pytest.raises(Exception) as e_info:
             client.stop_monitoring("CT")
 
-        assert e_info.typename == 'TransportError'
+        assert e_info.typename == "TransportError"
 
     @responses.activate
     def test_retry_timeout(self):
@@ -164,7 +167,9 @@ class TestSiriClient:
                 status=500,
                 content_type="application/json",
             )
-        client = siri_client.SiriClient(api_key="fake-key", retry_timeout=2, queries_per_second=3)
+        client = siri_client.SiriClient(
+            api_key="fake-key", retry_timeout=2, queries_per_second=3
+        )
         start = time.time()
 
         with pytest.raises(Exception) as e_info:
@@ -173,7 +178,7 @@ class TestSiriClient:
 
         end = time.time()
         assert start + 2 < end < start + 3
-        assert e_info.typename == 'Timeout'
+        assert e_info.typename == "Timeout"
 
     @responses.activate
     def test_custom_extract(self):
@@ -192,6 +197,8 @@ class TestSiriClient:
         b = client._request("StopMonitoring", {}, extract_body=custom_extract)
         assert len(responses.calls) == 1
         assert b["error"] == "errormessage"
+
+
 """
     @responses.activate
     def test_api_error(self):
@@ -209,6 +216,7 @@ class TestSiriClient:
 
         assert e_info.typename == 'ApiError'
 """
+
 
 class RequestCallback:
     def __init__(self):

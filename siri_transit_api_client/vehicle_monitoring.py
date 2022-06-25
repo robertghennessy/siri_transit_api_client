@@ -22,9 +22,7 @@ def vehicle_monitoring(client, agency: str, vehicle_id: str = None) -> dict:
     :return: Results of the query
     :rtype: dict
     """
-    params = {
-        'agency': agency
-    }
+    params = {"agency": agency}
     if vehicle_id:
         params["vehicleID"] = vehicle_id
 
