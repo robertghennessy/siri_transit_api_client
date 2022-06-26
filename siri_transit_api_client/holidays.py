@@ -10,7 +10,7 @@ def holidays(client, operator_id: str, accept_language: str = None) -> dict:
     Query the 511 api to get the holidays for a transit operator.
 
     :param client: SiriClient session
-    :type client: SiriClient
+    :type client: siri_transit_api_client.SiriClient
 
     :param operator_id: filter a particular operator id/code
     :type operator_id: str

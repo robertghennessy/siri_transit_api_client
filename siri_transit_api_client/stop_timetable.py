@@ -17,26 +17,26 @@ def stop_timetable(
     """
     Query the api stop static/scheduled timetables in the system for a particular stop
 
-     :param client: SiriClient session
-     :type client: SiriClient
+    :param client: SiriClient session
+    :type client: siri_transit_api_client.SiriClient
 
-     :param operator_id: filters based on a particular operator id/code
-     :type operator_id: str
+    :param operator_id: filters based on a particular operator id/code
+    :type operator_id: str
 
-     :param stop_code: The StopCode that uniquely identifies a physical stop or platform.
-     :type stop_code: str
+    :param stop_code: The StopCode that uniquely identifies a physical stop or platform.
+    :type stop_code: str
 
-     :param line_id:filter based on particular line
-     :type line_id: str, optional
+    :param line_id: filter based on particular line
+    :type line_id: str, optional
 
-     :param start_time: The start date parameter allows for requesting departures within a departure window.
-     :type start_time: str, optional
+    :param start_time: The start date parameter allows for requesting departures within a departure window.
+    :type start_time: str, optional
 
-     :param end_time: The end date parameter allows for requesting departures within a departure window.
-     :type end_time: str, optional
+    :param end_time: The end date parameter allows for requesting departures within a departure window.
+    :type end_time: str, optional
 
-     :return: Results of the query
-     :rtype: dict
+    :return: Results of the query
+    :rtype: dict
     """
 
     params = {"Operator_id": operator_id, "MonitoringRef": stop_code}

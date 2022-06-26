@@ -13,7 +13,7 @@ def lines(
     filter using line_id.
 
     :param client: SiriClient session
-    :type client: SiriClient
+    :type client: siri_transit_api_client.SiriClient
 
     :param operator_id: filter a particular operator id/code
     :type operator_id: str

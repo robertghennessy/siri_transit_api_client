@@ -11,7 +11,7 @@ def vehicle_monitoring(client, agency: str, vehicle_id: str = None) -> dict:
     a stop.
 
     :param client: SiriClient session
-    :type client: SiriClient
+    :type client: siri_transit_api_client.SiriClient
 
     :param agency: agency ID to be monitored
     :type agency: str

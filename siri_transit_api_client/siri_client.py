@@ -15,6 +15,7 @@ import time
 import urllib
 
 import siri_transit_api_client
+
 from siri_transit_api_client.stop_monitoring import stop_monitoring
 from siri_transit_api_client.operators import operators
 from siri_transit_api_client.lines import lines
@@ -94,7 +95,8 @@ class SiriClient:
         extract_body=None,
         requests_kwargs: dict = None,
     ) -> str:
-        """Performs HTTP GET/POST with credentials, returning the body as
+        """
+        Performs HTTP GET/POST with credentials, returning the body as
         JSON.
 
         :param url: URL path for the request. Should begin with a slash.
@@ -140,13 +142,12 @@ class SiriClient:
             raise siri_transit_api_client.exceptions.Timeout()
 
         if retry_counter > 0:
-            # 0.5 * (1.5 ^ i) is an increased sleep time of 1.5x per iteration,
-            # starting at 0.5s when retry_counter=0. The first retry will occur
-            # at 1, so subtract that first.
-            delay_seconds = 0.5 * 1.5 ** (retry_counter - 1)
-
-            # Jitter this value by 50% and pause.
-            time.sleep(delay_seconds * (random.random() + 0.5))
+            # implement full jitter algorithm
+            cap = 1e3
+            exp_base = 2
+            multiple = 1
+            delay_seconds = min(cap, multiple * exp_base ** retry_counter) * random.random()
+            time.sleep(delay_seconds)
 
         authed_url = self._generate_auth_url(url, params)
 
@@ -232,7 +233,8 @@ class SiriClient:
         raise siri_transit_api_client.exceptions.ApiError("error", body)
 
     def _generate_auth_url(self, path: str, params: dict) -> str:
-        """Returns the path and query string portion of the request URL, first
+        """
+        Returns the path and query string portion of the request URL, first
         adding any necessary parameters.
 
         :param path: The path portion of the URL.

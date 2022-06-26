@@ -12,7 +12,7 @@ def stop_places(
     Query to get a named place or the physical stop where public transport may be accessed. C
 
     :param client: SiriClient session
-    :type client: SiriClient
+    :type client: siri_transit_api_client.SiriClient
 
     :param operator_id: filter for operator
     :type operator_id: str

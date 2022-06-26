@@ -31,7 +31,7 @@ import siri_transit_api_client
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc'] #, 'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -46,8 +46,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
+from datetime import datetime
 project = 'SIRI Transit API Client'
-copyright = "2022, Robert G Hennessy"
+copyright = u'%s, Robert G Hennessy' % datetime.now().year
 author = "Robert G Hennessy"
 
 # The version info for the project you're documenting, acts as replacement
@@ -64,7 +65,7 @@ release = siri_transit_api_client.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -96,6 +97,8 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# Ensure class constructors are added to the docs.
+autoclass_content = 'both'
 
 # -- Options for HTMLHelp output ---------------------------------------
 

@@ -10,7 +10,7 @@ def operators(client, accept_language: str = None, operator_id: str = None) -> d
     Query api to collect list of all the public transit operators within the jurisdiction.
 
     :param client: SiriClient session
-    :type client: SiriClient
+    :type client: siri_transit_api_client.SiriClient
 
     :param accept_language: select desired language. if unsupported, will return default language.
     :type accept_language: str, optional

@@ -18,7 +18,7 @@ def stops(
     Query  api to get location where passengers can board or leave from vehicles.
 
     :param client: SiriClient session
-    :type client: SiriClient
+    :type client: siri_transit_api_client.SiriClient
 
     :param operator_id: filters based on a particular operator id/code
     :type operator_id: str
@@ -26,7 +26,7 @@ def stops(
     :param accept_language: select desired language. if language unsupported, will return default language.
     :type accept_language: str, optional
 
-    :param line_id:filter based on particular line
+    :param line_id: filter based on particular line
     :type line_id: str, optional
 
     :param include_stop_areas: When true, all stop areas (stop groupings) along with the referenced stops
