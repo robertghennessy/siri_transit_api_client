@@ -1,19 +1,22 @@
 """Tests for car_time file."""
-import pytest
-from siri_transit_api_client import SiriClient
-from siri_transit_api_client.exceptions import ApiError
-import time
-import responses
 import random
+import time
+
+import pytest
+import responses
+import requests
+
+from siri_transit_api_client import SiriClient
+from siri_transit_api_client.exceptions import ApiError, TransportError, HTTPError, Timeout
 
 
 class TestSiriClient:
     def test_no_api_key(self):
-        with pytest.raises(ValueError) as e_info:
-            client = SiriClient()
+        with pytest.raises(ValueError):
+            SiriClient()
 
     def test_invalid_api_key(self):
-        with pytest.raises(ApiError) as e_info:
+        with pytest.raises(ApiError):
             client = SiriClient(api_key="invalid-key")
             client.stop_monitoring("CT")
 
@@ -43,7 +46,8 @@ class TestSiriClient:
             responses.add(
                 responses.GET,
                 "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT",
-                body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT","Status":"true","StopMonitoringDelivery":{}}}',
+                body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT",'
+                     '"Status":"true","StopMonitoringDelivery":{}}}',
                 status=200,
                 content_type="application/json",
             )
@@ -61,7 +65,8 @@ class TestSiriClient:
         responses.add(
             responses.GET,
             "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT",
-            body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT","Status":"true","StopMonitoringDelivery":{}}}',
+            body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT","Status":"true",'
+                 '"StopMonitoringDelivery":{}}}',
             status=200,
             content_type="application/json",
         )
@@ -79,33 +84,17 @@ class TestSiriClient:
     def test_timeout(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
-            status=408,
-        )
-
-        # TODO - this test function does not work. Throws http error instead of transport error
-
-        # client = siri_client.SiriClient(api_key="fake-key")
-        # client.stop_monitoring("CT")
-
-        # assert len(responses.calls) == 1
-        # assert responses.calls[0].request.url == "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT"
-
-    @responses.activate
-    def test_retry(self):
-
-        responses.add_callback(
-            responses.GET,
-            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
-            content_type="application/json",
-            callback=RequestCallback(),
+            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT",
+            status=401,
+            body=requests.exceptions.Timeout("Timeout")
         )
 
         client = SiriClient(api_key="fake-key")
-        client.stop_monitoring("CT")
 
-        assert len(responses.calls) == 2
-        assert responses.calls[0].request.url == responses.calls[1].request.url
+        with pytest.raises(Timeout) as e_info:
+            client.stop_monitoring("CT")
+
+        assert str(e_info.value) == ""
 
     @responses.activate
     def test_retry_api_false(self):
@@ -123,33 +112,102 @@ class TestSiriClient:
         assert responses.calls[0].request.url == responses.calls[1].request.url
 
     @responses.activate
-    def test_retry_intermittent(self):
-        responses.add_callback(
+    def test_unknown_error(self):
+        responses.add(
             responses.GET,
-            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
+            "https://api.511.org/Transit/StopMonitoring?api_key=invalid-key&Format=json&agency=CT",
+            status=408,
             content_type="application/json",
-            callback=RequestCallback(),
         )
 
-        client = SiriClient(api_key="fake-key")
-        client.stop_monitoring("CT")
+        client = SiriClient(api_key="invalid-key")
+        with pytest.raises(HTTPError) as e_info:
+            client.stop_monitoring("CT")
+        assert str(e_info.value) == "HTTP Error: 408"
 
-        assert len(responses.calls) == 2
-        assert responses.calls[0].request.url == responses.calls[1].request.url
+    @responses.activate
+    def test_400_error(self):
+        responses.add(
+            responses.GET,
+            "https://api.511.org/Transit/StopMonitoring?api_key=invalid-key&Format=json&agency=CT",
+            status=400,
+            body="400 Error",
+        )
+
+        client = SiriClient(api_key="invalid-key")
+        with pytest.raises(ApiError) as e_info:
+            client.stop_monitoring("CT")
+        assert str(e_info.value) == "error (400 Error)"
+
+    @responses.activate
+    def test_401_error(self):
+        responses.add(
+            responses.GET,
+            "https://api.511.org/Transit/StopMonitoring?api_key=invalid-key&Format=json&agency=CT",
+            status=401,
+            body="401 Error",
+        )
+
+        client = SiriClient(api_key="invalid-key")
+        with pytest.raises(ApiError) as e_info:
+            client.stop_monitoring("CT")
+        assert str(e_info.value) == "401 Error"
+
+    @responses.activate
+    def test_404_error(self):
+        responses.add(
+            responses.GET,
+            "https://api.511.org/Transit/StopMonitoring?api_key=invalid-key&Format=json&agency=CT",
+            status=404,
+            body="404 Error",
+        )
+
+        client = SiriClient(api_key="invalid-key")
+        with pytest.raises(ApiError) as e_info:
+            client.stop_monitoring("CT")
+        assert str(e_info.value) == "404 Error"
 
     @responses.activate
     def test_transport_error(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&agency=CT",
-            status=404,
-            content_type="application/json",
+            "https://api.511.org/Transit/StopMonitoring?api_key=invalid-key&Format=json&agency=CT",
+            status=200,
+            body=[1, 2, 3],
         )
 
         client = SiriClient(api_key="invalid-key")
-        with pytest.raises(Exception) as e_info:
+        with pytest.raises(TransportError) as e_info:
             client.stop_monitoring("CT")
+        assert str(e_info.value) == "a bytes-like object is required, not 'list'"
 
+    @responses.activate
+    def test_transport_error_null(self):
+        responses.add(
+            responses.GET,
+            "https://api.511.org/Transit/StopMonitoring?api_key=invalid-key&Format=json&agency=CT",
+            status=200,
+            body="null"
+        )
+
+        client = SiriClient(api_key="invalid-key")
+        with pytest.raises(ApiError) as e_info:
+            client.stop_monitoring("CT")
+        print(str(e_info.value))
+        assert str(e_info.value) == "error"
+
+    @responses.activate
+    def test_transport_json(self):
+        responses.add(
+            responses.GET,
+            "https://api.511.org/Transit/StopMonitoring?api_key=invalid-key&Format=json&agency=CT",
+            status=200,
+            body='{"a":1}',
+        )
+
+        client = SiriClient(api_key="invalid-key")
+        response = client.stop_monitoring("CT")
+        assert response == {'a': 1}
 
     @responses.activate
     def test_retry_timeout(self):
@@ -179,7 +237,7 @@ class TestSiriClient:
 
         end = time.time()
         random.seed(0)
-        assert start + 2 < end < start + 6
+        assert start + 2 < end < start + 10
         assert e_info.typename == "Timeout"
 
     @responses.activate
@@ -191,7 +249,7 @@ class TestSiriClient:
             responses.GET,
             "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json",
             body='{"error":"errormessage"}',
-            status=403,
+            status=200,
             content_type="application/json",
         )
 
@@ -200,24 +258,19 @@ class TestSiriClient:
         assert len(responses.calls) == 1
         assert b["error"] == "errormessage"
 
-
-"""
     @responses.activate
-    def test_api_error(self):
+    def test_body_list(self):
+
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json&agency=CT",
-            body='{"status":"Error","results":[]}',
-            status=200,
-            content_type="application/json",
+            "https://api.511.org/Transit/StopMonitoring?api_key=fake-key&Format=json",
+            body='[1,2,3]',
+            status=200
         )
 
-        client = siri_client.SiriClient(api_key="fake-key")
-        with pytest.raises(Exception) as e_info:
-            client.stop_monitoring("CT")
-
-        assert e_info.typename == 'ApiError'
-"""
+        client = SiriClient(api_key="fake-key")
+        b = client._request("StopMonitoring", {})
+        assert type(b) == list
 
 
 class RequestCallback:

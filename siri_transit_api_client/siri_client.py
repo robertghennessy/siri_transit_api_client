@@ -4,27 +4,26 @@ https://github.com/googlemaps/google-maps-services-python
 
 @author: Robert Hennessy (robertghennessy@gmail.com)
 """
-import datetime
-
-import requests
-import json
-import datetime as dt
 import collections
+import datetime
+import datetime as dt
+import json
 import random
 import time
 import urllib
 
-import siri_transit_api_client
+import requests
 
-from siri_transit_api_client.stop_monitoring import stop_monitoring
-from siri_transit_api_client.operators import operators
-from siri_transit_api_client.lines import lines
-from siri_transit_api_client.stops import stops
-from siri_transit_api_client.stop_places import stop_places
-from siri_transit_api_client.patterns import patterns
-from siri_transit_api_client.timetable import timetable
+import siri_transit_api_client
 from siri_transit_api_client.holidays import holidays
+from siri_transit_api_client.lines import lines
+from siri_transit_api_client.operators import operators
+from siri_transit_api_client.patterns import patterns
+from siri_transit_api_client.stop_monitoring import stop_monitoring
+from siri_transit_api_client.stop_places import stop_places
 from siri_transit_api_client.stop_timetable import stop_timetable
+from siri_transit_api_client.stops import stops
+from siri_transit_api_client.timetable import timetable
 from siri_transit_api_client.vehicle_monitoring import vehicle_monitoring
 
 _DEFAULT_BASE_URL = "https://api.511.org/Transit/"
@@ -82,7 +81,7 @@ class SiriClient:
         self.queries_per_second = queries_per_second
         self.retry_over_query_limit = retry_over_query_limit
         # double ended queue. elements can be added to or removed from either the front (head) or back (tail)
-        self.sent_times = collections.deque("", queries_per_second)
+        self.sent_times = collections.deque([0.0], maxlen=queries_per_second)
         self.requests_kwargs = requests_kwargs or {}
 
     def _request(
@@ -94,7 +93,7 @@ class SiriClient:
         base_url: str = None,
         extract_body=None,
         requests_kwargs: dict = None,
-    ) -> str:
+    ) -> dict:
         """
         Performs HTTP GET/POST with credentials, returning the body as
         JSON.

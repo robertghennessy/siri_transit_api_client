@@ -39,7 +39,7 @@ def stop_timetable(
     :rtype: dict
     """
 
-    params = {"Operator_id": operator_id, "MonitoringRef": stop_code}
+    params = {"OperatorRef": operator_id, "MonitoringRef": stop_code}
     if line_id:
         params["Line_id"] = line_id
     if start_time:

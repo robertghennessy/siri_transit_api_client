@@ -1,13 +1,14 @@
-from siri_transit_api_client import siri_client
 import responses
 
+from siri_transit_api_client import siri_client
 
-class TestHolidays:
+
+class TestStopTimetable:
     @responses.activate
     def test_no_optional_params(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/stoptimetable?api_key=fake-key&Format=json&Operator_id=CT&MonitoringRef=70021",
+            "https://api.511.org/Transit/stoptimetable?api_key=fake-key&Format=json&OperatorRef=CT&MonitoringRef=70021",
             body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT",'
             '"Status":"true","StopMonitoringDelivery":{}}}',
             status=200,
@@ -20,14 +21,16 @@ class TestHolidays:
         assert len(responses.calls) == 1
         assert (
             responses.calls[0].request.url
-            == "https://api.511.org/Transit/stoptimetable?api_key=fake-key&Format=json&Operator_id=CT&MonitoringRef=70021"
+            == "https://api.511.org/Transit/stoptimetable?api_key=fake-key&Format=json&OperatorRef=CT&"
+               "MonitoringRef=70021"
         )
 
     @responses.activate
     def test_all_optional_params(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/stoptimetable?api_key=fake-key&Format=json&Operator_id=CT&MonitoringRef=70021&Line_id=L5&StartTime=2022&EndTime=2023",
+            "https://api.511.org/Transit/stoptimetable?api_key=fake-key&Format=json&OperatorRef=CT&MonitoringRef=70021&"
+            "Line_id=L5&StartTime=2022&EndTime=2023",
             body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT",'
             '"Status":"true","StopMonitoringDelivery":{}}}',
             status=200,
@@ -40,5 +43,6 @@ class TestHolidays:
         assert len(responses.calls) == 1
         assert (
             responses.calls[0].request.url
-            == "https://api.511.org/Transit/stoptimetable?api_key=fake-key&Format=json&Operator_id=CT&MonitoringRef=70021&Line_id=L5&StartTime=2022&EndTime=2023"
+            == "https://api.511.org/Transit/stoptimetable?api_key=fake-key&Format=json&OperatorRef=CT&"
+               "MonitoringRef=70021&Line_id=L5&StartTime=2022&EndTime=2023"
         )

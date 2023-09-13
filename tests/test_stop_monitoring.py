@@ -1,7 +1,7 @@
 import pytest
-from siri_transit_api_client import siri_client
 import responses
-import json
+
+from siri_transit_api_client import siri_client
 
 
 class TestStopMonitoring:

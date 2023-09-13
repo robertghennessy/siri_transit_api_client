@@ -1,5 +1,6 @@
-from siri_transit_api_client import siri_client
 import responses
+
+from siri_transit_api_client import siri_client
 
 
 class TestStopPlaces:
@@ -27,7 +28,8 @@ class TestStopPlaces:
     def test_all_optional_params(self):
         responses.add(
             responses.GET,
-            "https://api.511.org/Transit/stopPlaces?api_key=fake-key&Format=json&Operator_id=CT&accept_language=en&Stop_id=70021",
+            "https://api.511.org/Transit/stopPlaces?api_key=fake-key&Format=json&Operator_id=CT&"
+            "accept_language=en&Stop_id=70021",
             body='{"ServiceDelivery":{"ResponseTimestamp":"2022-05-20T22:27:30Z","ProducerRef":"CT",'
             '"Status":"true","StopMonitoringDelivery":{}}}',
             status=200,
@@ -40,5 +42,6 @@ class TestStopPlaces:
         assert len(responses.calls) == 1
         assert (
             responses.calls[0].request.url
-            == "https://api.511.org/Transit/stopPlaces?api_key=fake-key&Format=json&Operator_id=CT&accept_language=en&Stop_id=70021"
+            == "https://api.511.org/Transit/stopPlaces?api_key=fake-key&Format=json&Operator_id=CT&"
+               "accept_language=en&Stop_id=70021"
         )
