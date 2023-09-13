@@ -105,3 +105,11 @@ venv_3_11/
 # IDE settings
 .vscode/
 .idea/
+
+# config giles
+config.ini
+
+# apple files
+.DS_Store
+docs/.DS_Store
+siri_transit_api_client/.DS_Store
