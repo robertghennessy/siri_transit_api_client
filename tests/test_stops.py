@@ -1,6 +1,6 @@
 import responses
 
-from siri_transit_api_client import siri_client
+from src.siri_transit_api_client import siri_client
 
 
 class TestStops:

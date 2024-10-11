@@ -87,7 +87,6 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
-venv_3_11/
 
 # Spyder project settings
 .spyderproject
@@ -112,4 +111,4 @@ config.ini
 # apple files
 .DS_Store
 docs/.DS_Store
-siri_transit_api_client/.DS_Store
+src/siri_transit_api_client/.DS_Store
