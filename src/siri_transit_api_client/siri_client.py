@@ -26,6 +26,7 @@ from siri_transit_api_client.stop_timetable import stop_timetable
 from siri_transit_api_client.stops import stops
 from siri_transit_api_client.timetable import timetable
 from siri_transit_api_client.vehicle_monitoring import vehicle_monitoring
+from siri_transit_api_client.shapes import shapes
 
 _DEFAULT_BASE_URL = "https://api.511.org/Transit/"
 _DEFAULT_TRANSIT_AGENCY = "CT"
@@ -263,3 +264,4 @@ SiriClient.timetable = timetable
 SiriClient.holidays = holidays
 SiriClient.stop_timetable = stop_timetable
 SiriClient.vehicle_monitoring = vehicle_monitoring
+SiriClient.shapes = shapes
