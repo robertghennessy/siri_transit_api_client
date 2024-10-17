@@ -16,17 +16,6 @@ import requests
 
 import siri_transit_api_client
 
-from siri_transit_api_client.holidays import holidays
-from siri_transit_api_client.lines import lines
-from siri_transit_api_client.operators import operators
-from siri_transit_api_client.patterns import patterns
-from siri_transit_api_client.stop_monitoring import stop_monitoring
-from siri_transit_api_client.stop_places import stop_places
-from siri_transit_api_client.stop_timetable import stop_timetable
-from siri_transit_api_client.stops import stops
-from siri_transit_api_client.timetable import timetable
-from siri_transit_api_client.vehicle_monitoring import vehicle_monitoring
-from siri_transit_api_client.shapes import shapes
 
 _DEFAULT_BASE_URL = "https://api.511.org/Transit/"
 _DEFAULT_TRANSIT_AGENCY = "CT"
@@ -96,6 +85,7 @@ class SiriClient:
         extract_body=None,
         requests_kwargs: dict = None,
     ) -> dict:
+
         """
         Performs HTTP GET/POST with credentials, returning the body as
         JSON.
@@ -252,16 +242,334 @@ class SiriClient:
         else:
             return start_str
 
+    def holidays(self, operator_id: str, accept_language: str = None) -> dict:
+        """
+        Query the 511 api to get the holidays for a transit operator.
 
-# load in the other methods
-SiriClient.stop_monitoring = stop_monitoring
-SiriClient.operators = operators
-SiriClient.lines = lines
-SiriClient.stops = stops
-SiriClient.stop_places = stop_places
-SiriClient.patterns = patterns
-SiriClient.timetable = timetable
-SiriClient.holidays = holidays
-SiriClient.stop_timetable = stop_timetable
-SiriClient.vehicle_monitoring = vehicle_monitoring
-SiriClient.shapes = shapes
+        :param operator_id: filter a particular operator id/code
+        :type operator_id: str
+
+        :param accept_language: select desired language. if unsupported, will return default language.
+        :type accept_language: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {"Operator_id": operator_id}
+        if accept_language:
+            params["accept_language"] = accept_language
+
+        return self._request("holidays", params)
+
+
+    def lines(
+        self, operator_id: str, accept_language: str = None, line_id: str = None
+    ) -> dict:
+        """
+        Query the 511 api to get the routes covered by transit operators within the jurisdiction. Can list all routes or
+        filter using line_id.
+
+        :param operator_id: filter a particular operator id/code
+        :type operator_id: str
+
+        :param accept_language: select desired language. if unsupported, will return default language.
+        :type accept_language: str, optional
+
+        :param line_id: filter based on a particular line
+        :type line_id: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {"Operator_id": operator_id}
+        if accept_language:
+            params["accept_language"] = accept_language
+        if line_id:
+            params["Line_id"] = line_id
+
+        return self._request("lines", params)
+
+    def operators(self, accept_language: str = None, operator_id: str = None) -> dict:
+        """
+        Query api to collect list of all the public transit operators within the jurisdiction.
+
+        :param accept_language: select desired language. if unsupported, will return default language.
+        :type accept_language: str, optional
+
+        :param operator_id: filter based on a particular operator id/code
+        :type operator_id: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {}
+        if accept_language:
+            params["accept_language"] = accept_language
+        if operator_id:
+            params["Operator_id"] = operator_id
+
+        return self._request("Operators", params)
+
+    def patterns(
+        self,
+        operator_id: str,
+        line_id: str,
+        accept_language: str = None,
+        pattern_id: str = None,
+    ) -> dict:
+        """
+        Query  api to get the pattern,  an ordered list of stop points and time points for a Line.
+
+        :param operator_id: filters based on a particular operator id/code
+        :type operator_id: str
+
+        :param line_id: filter based on particular line
+        :type line_id: str
+
+        :param accept_language: select desired language. if language unsupported, will return default language.
+        :type accept_language: str, optional
+
+        :param pattern_id: filter based on a particular pattern. The pattern_id should correspond to the id attribute of a
+            ServiceJourneyPattern returned by the Pattern API.
+        :type pattern_id: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {"Operator_id": operator_id, "Line_id": line_id}
+        if accept_language:
+            params["accept_language"] = accept_language
+        if pattern_id:
+            params["Pattern_id"] = pattern_id
+        return self._request("patterns", params)
+
+    def shapes(
+        self,
+        operator_id: str,
+        trip_id: str,
+        accept_language: str = None,
+    ) -> dict:
+        """
+        Query  api to get the path that a vehicle travels along a trip.
+
+        :param operator_id: filters based on a particular operator id/code
+        :type operator_id: str
+
+        :param trip_id: filter based on particular trip
+        :type trip_id: str
+
+        :param accept_language: select desired language. if language unsupported, will return default language.
+        :type accept_language: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {"Operator_id": operator_id, "trip_id": trip_id}
+        if accept_language:
+            params["accept_language"] = accept_language
+        return self._request("shapes", params)
+
+    def stop_monitoring(self, agency: str, stop_code: str = None) -> dict:
+        """
+        Collect stop monitoring information which provides current and forthcoming vehicles arrivals and departures at
+        a stop.
+
+        :param agency: agency ID to be monitored
+        :type agency: str
+
+        :param stop_code:  stop ID to be monitored
+        :type stop_code: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+        params = {"agency": agency}
+        if stop_code:
+            params["stopCode"] = stop_code
+
+        return self._request("StopMonitoring", params)
+
+    def stop_places(
+        self, operator_id: str, accept_language: str = None, stop_id: str = None):
+        """
+        Query to get a named place or the physical stop where public transport may be accessed. C
+
+        :param operator_id: filter for operator
+        :type operator_id: str
+
+        :param accept_language: select desired language. if language unsupported, will return default language.
+        :type accept_language: str, optional
+
+        :param stop_id: filter for a stop
+        :type stop_id: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {"Operator_id": operator_id}
+        if accept_language:
+            params["accept_language"] = accept_language
+        if stop_id:
+            params["Stop_id"] = stop_id
+
+        return self._request("stopPlaces", params)
+
+    def stop_timetable(
+        self,
+        operator_id: str,
+        stop_code: str,
+        line_id: str = None,
+        start_time: str = None,
+        end_time: str = None,
+    ) -> dict:
+        """
+        Query the api stop static/scheduled timetables in the system for a particular stop
+
+        :param operator_id: filters based on a particular operator id/code
+        :type operator_id: str
+
+        :param stop_code: The StopCode that uniquely identifies a physical stop or platform.
+        :type stop_code: str
+
+        :param line_id: filter based on particular line
+        :type line_id: str, optional
+
+        :param start_time: The start date parameter allows for requesting departures within a departure window.
+        :type start_time: str, optional
+
+        :param end_time: The end date parameter allows for requesting departures within a departure window.
+        :type end_time: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {"OperatorRef": operator_id, "MonitoringRef": stop_code}
+        if line_id:
+            params["Line_id"] = line_id
+        if start_time:
+            params["StartTime"] = start_time
+        if end_time:
+            params["EndTime"] = end_time
+        return self._request("stoptimetable", params)
+
+    def stops(
+        self,
+        operator_id: str,
+        accept_language: str = None,
+        line_id: str = None,
+        include_stop_areas: bool = False,
+        direction_id: str = None,
+        pattern_id: str = None,
+    ) -> dict:
+        """
+        Query  api to get location where passengers can board or leave from vehicles.
+
+        :param operator_id: filters based on a particular operator id/code
+        :type operator_id: str
+
+        :param accept_language: select desired language. if language unsupported, will return default language.
+        :type accept_language: str, optional
+
+        :param line_id: filter based on particular line
+        :type line_id: str, optional
+
+        :param include_stop_areas: When true, all stop areas (stop groupings) along with the referenced stops
+            (ScheduledStopPoints) are returned.
+        :type include_stop_areas: bool, optional
+
+        :param direction_id: filter  based on a particular route and direction. line_id also needs to be provided. The
+            direction_id should correspond to value returned by the Pattern API for the operator and route.
+        :type direction_id: str, optional
+
+        :param pattern_id: filter based on a particular pattern. The pattern_id should correspond to the id attribute of a
+            ServiceJourneyPattern returned by the Pattern API.
+        :type pattern_id: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {"Operator_id": operator_id}
+        if accept_language:
+            params["accept_language"] = accept_language
+        if line_id:
+            params["Line_id"] = line_id
+        if include_stop_areas:
+            params["include_stop_areas"] = "true"
+        if direction_id:
+            params["Direction_id"] = direction_id
+        if pattern_id:
+            params["Pattern_id"] = pattern_id
+        return self._request("stops", params)
+
+    def timetable(
+        self,
+        operator_id: str,
+        line_id: str,
+        accept_language: str = None,
+        include_day_type_assignments: bool = None,
+        include_special_service: bool = False,
+        exception_date: dt.date = None,
+    ) -> dict:
+        """
+        Query  api to get the timetable for a given Line, Direction and DayType.
+
+        :param operator_id: filters based on a particular operator id/code
+        :type operator_id: str
+
+        :param line_id: filter based on particular line
+        :type line_id: str
+
+        :param accept_language: select desired language. if language unsupported, will return default language.
+        :type accept_language: str, optional
+
+        :param include_day_type_assignments: DayTypeAssignments will be included only if this flag is set to true.
+        :type include_day_type_assignments: bool, optional
+
+        :param include_special_service: If set to true, exceptions for the selected line are returned
+        :type include_special_service: bool, optional
+
+        :param exception_date: provide timetable during holiday/exception date. If nothing returned, service not provide on
+            that date
+        :type exception_date: datetime.date, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+
+        params = {"Operator_id": operator_id, "Line_id": line_id}
+        if accept_language:
+            params["accept_language"] = accept_language
+        if include_day_type_assignments:
+            params["IncludeDayTypeAssignments"] = include_day_type_assignments
+        params["IncludeSpecialService"] = include_special_service
+        if exception_date:
+            params["ExceptionDate"] = exception_date.strftime("%Y%m%d")
+        return self._request("timetable", params)
+
+    def vehicle_monitoring(self, agency: str, vehicle_id: str = None) -> dict:
+        """
+        Collect stop monitoring information which provides current and forthcoming vehicles arrivals and departures at
+        a stop.
+
+        :param agency: agency ID to be monitored
+        :type agency: str
+
+        :param vehicle_id:  vehicle ID to be monitored
+        :type vehicle_id: str, optional
+
+        :return: Results of the query
+        :rtype: dict
+        """
+        params = {"agency": agency}
+        if vehicle_id:
+            params["vehicleID"] = vehicle_id
+
+        return self._request("VehicleMonitoring", params)
