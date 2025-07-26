@@ -113,3 +113,6 @@ config.ini
 .DS_Store
 docs/.DS_Store
 src/siri_transit_api_client/.DS_Store
+
+#pypy
+.pypirc

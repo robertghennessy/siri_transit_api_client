@@ -15,18 +15,18 @@ SIRI Transit API Client
 
 
 
-
-API client for transit data using SIRI framework.
-
+Description
+-----------
+API client for transit data using SIRI (Standard Interface for Real-time Information) framework. The specific
+implementation is located at https://511.org/open-data/transit.
 
 * Free software: GNU General Public License v3
 * Documentation: https://siri-transit-api-client.readthedocs.io.
 
-
-Features
---------
-
-* TODO
+API Key
+-------
+API key is required to connect with the server. San Francisco Bay Area 511.org API key can be requested
+at https://511.org/open-data/token
 
 Credits
 -------
