@@ -6,9 +6,6 @@ SIRI Transit API Client
 .. image:: https://img.shields.io/pypi/v/siri_transit_api_client.svg
         :target: https://pypi.python.org/pypi/siri_transit_api_client
 
-.. image:: https://img.shields.io/travis/robertghennessy/siri_transit_api_client.svg
-        :target: https://travis-ci.com/robertghennessy/siri_transit_api_client
-
 .. image:: https://readthedocs.org/projects/siri-transit-api-client/badge/?version=latest
         :target: https://siri-transit-api-client.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
